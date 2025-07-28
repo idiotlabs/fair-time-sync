@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "FairMeet — Fair Meeting Scheduler for Distributed Teams",
+    "description": "Meet fairly across time zones. Rotate obligations, protect focus, and export to calendar."
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing", 
+    "faq": "FAQ",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "backToHome": "Back to Home"
+  },
+  "hero": {
+    "badge": "The New Standard for Fair Meeting Scheduling",
+    "title": "Meet fairly across",
+    "titleHighlight": "time zones",
+    "description": "Fair meeting time recommendation system for distributed teams. Distribute timezone burden equally and find optimal overlapping times.",
+    "cta": "Start Free",
+    "demo": "View Demo"
+  },
+  "features": {
+    "title": "Key Features",
+    "subtitle": "Everything you need for fair meeting scheduling",
+    "smartRecommendations": {
+      "title": "Smart Time Recommendations",
+      "description": "AI-powered algorithm analyzes team members' time zones and working hours to suggest optimal meeting times."
+    },
+    "fairnessScore": {
+      "title": "Fairness Score",
+      "description": "Quantifies each team member's timezone burden and provides fairness scores to ensure equal distribution."
+    },
+    "rotationSystem": {
+      "title": "Rotation System", 
+      "description": "Rotates the burden of inconvenient meeting times among team members to ensure long-term fairness."
+    },
+    "multiTimezone": {
+      "title": "Multi-timezone Support",
+      "description": "Supports all global time zones and displays meeting information in each team member's local time."
+    },
+    "calendarIntegration": {
+      "title": "Calendar Integration",
+      "description": "Integrates with major calendar services like Google Calendar and Outlook for one-click schedule addition."
+    },
+    "teamSharing": {
+      "title": "Team Sharing",
+      "description": "Easily share meeting suggestions with team members and manage decision processes transparently with read-only links."
+    }
+  },
+  "pricing": {
+    "title": "Pricing Plans",
+    "subtitle": "Choose the plan that fits your team size",
+    "free": {
+      "title": "Free",
+      "description": "For individuals and small teams",
+      "price": "$0",
+      "period": "/month",
+      "features": [
+        "1 team",
+        "Up to 5 members",
+        "2 recommendations per week",
+        "Basic sharing"
+      ],
+      "cta": "Get Started"
+    },
+    "pro": {
+      "title": "Pro",
+      "description": "For growing teams",
+      "price": "$29",
+      "period": "/month",
+      "popular": "Popular",
+      "features": [
+        "Unlimited teams",
+        "Up to 20 members per team",
+        "Unlimited recommendations",
+        "Custom branding",
+        "Advanced analytics"
+      ],
+      "cta": "Get Started"
+    },
+    "team": {
+      "title": "Team",
+      "description": "For large organizations", 
+      "price": "$99",
+      "period": "/month",
+      "features": [
+        "Unlimited teams",
+        "Up to 50 members per team",
+        "Slack integration",
+        "Audit logs",
+        "Dedicated support"
+      ],
+      "cta": "Contact Us"
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": {
+      "fairness": {
+        "q": "How does FairMeet ensure fairness?",
+        "a": "We track the frequency of inconvenient meeting times (before 7 AM or after 9 PM) for each team member based on their local time, and distribute them equally to ensure long-term fairness for all team members."
+      },
+      "calendars": {
+        "q": "Which calendar services are supported?",
+        "a": "We integrate with Google Calendar, Microsoft Outlook, Apple Calendar, and other major calendar services. ICS file downloads are also supported for use with any calendar app."
+      },
+      "freeLimits": {
+        "q": "What are the limitations of the free plan?",
+        "a": "The free plan allows 1 team, up to 5 members, and 2 recommendation generations per week. For more features, please upgrade to the Pro plan."
+      }
+    }
+  },
+  "footer": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service", 
+    "support": "Support",
+    "copyright": "© 2024 FairMeet. All rights reserved."
+  },
+  "demo": {
+    "title": "Sample Team Meeting Recommendations",
+    "subtitle": "Check out fair meeting time recommendations for 4 global team members",
+    "teamInfo": "PT, UTC, IST, KST timezones • 45-minute meetings • Fairness rotation enabled",
+    "metrics": {
+      "overlap": "Overlap",
+      "fairness": "Fairness Score",
+      "improvement": "Fairness Improvement if Selected"
+    },
+    "attendees": "Attendees",
+    "actions": {
+      "downloadICS": "Download ICS",
+      "googleCalendar": "Google Calendar"
+    },
+    "cta": {
+      "title": "Get Started with FairMeet",
+      "subtitle": "Experience fair meeting scheduling for your team right now",
+      "start": "Start Free",
+      "newSuggestions": "Generate New Suggestions"
+    },
+    "loading": "Preparing demo data...",
+    "loadingSubtitle": "Generating sample team and meeting recommendations.",
+    "error": "Error occurred",
+    "retry": "Try Again"
+  },
+  "auth": {
+    "title": "Welcome to FairMeet",
+    "subtitle": "Sign in to start fair meeting scheduling",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "dashboard": {
+    "title": "Your Teams",
+    "subtitle": "Manage your teams and meeting schedules",
+    "createTeam": "Create New Team",
+    "noTeams": "No teams yet",
+    "noTeamsSubtitle": "Create your first team to start scheduling fair meetings"
+  },
+  "health": {
+    "title": "Health Check",
+    "subtitle": "System status and diagnostics",
+    "systemStatus": "System Status",
+    "staticFiles": "Static Files",
+    "routes": "Routes",
+    "total": "total",
+    "staticRoutes": "Static Routes (Pre-rendered)",
+    "dynamicRoutes": "Dynamic Routes",
+    "rawJson": "Raw JSON Output"
+  },
+  "seo": {
+    "title": "Social Preview & Meta Tags Debug",
+    "subtitle": "Check FairMeet's SEO and social media optimization status",
+    "metaTags": "Open Graph & Twitter Meta Tags",
+    "structuredData": "JSON-LD Structured Data",
+    "ogImages": "Open Graph Images",
+    "mainImage": "Main OG Image",
+    "demoImage": "Demo OG Image",
+    "previewTools": "Social Media Preview Test Tools",
+    "facebookDebugger": "Facebook Debugger",
+    "twitterValidator": "Twitter Card Validator", 
+    "linkedinInspector": "LinkedIn Inspector",
+    "googleRichResults": "Google Rich Results Test"
+  },
+  "calendar": {
+    "exportTesting": "Calendar Export Testing",
+    "testDescription": "Test various timezone scenarios and generate ICS files.",
+    "runTest": "Run ICS Test",
+    "testResults": "Test Results:",
+    "filesDownloaded": "ICS files have been saved to your downloads folder. Open each file in your calendar app to verify the times are correct.",
+    "testCases": "Test Cases:",
+    "kstTime": "KST Standard Time - Evening meeting in Korea",
+    "pstTransition": "PST/PDT Transition - During daylight saving transition",
+    "utcMeeting": "UTC Meeting - Standard UTC time",
+    "crossDate": "Cross-Date Boundary - Meeting crossing date boundary"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset"
+  },
+  "language": {
+    "switchTo": "Switch to Korean",
+    "suggestion": "View this page in Korean?",
+    "yes": "Yes",
+    "no": "No, thanks"
+  },
+  "watermark": {
+    "poweredBy": "Powered by FairMeet"
+  }
+}
