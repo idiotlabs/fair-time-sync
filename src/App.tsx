@@ -9,6 +9,9 @@ import Landing from "./pages/Landing";
 import Demo from "./pages/Demo";
 import PreviewCard from "./pages/PreviewCard";
 import Health from "./pages/Health";
+import HealthI18n from "./pages/HealthI18n";
+import DebugMeta from "./pages/DebugMeta";
+import E2ETest from "./pages/E2ETest";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import TeamDetail from "./pages/TeamDetail";
@@ -39,7 +42,10 @@ const RouteHandler = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/debug/preview-card" element={<PreviewCard />} />
+        <Route path="/debug/meta" element={<DebugMeta />} />
+        <Route path="/debug/e2e" element={<E2ETest />} />
         <Route path="/health" element={<Health />} />
+        <Route path="/health-i18n" element={<HealthI18n />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/app" element={<Dashboard />} />
         <Route path="/app/teams/:slug" element={<TeamDetail />} />
@@ -50,7 +56,10 @@ const RouteHandler = () => {
         <Route path="/ko" element={<Landing />} />
         <Route path="/ko/demo" element={<Demo />} />
         <Route path="/ko/debug/preview-card" element={<PreviewCard />} />
+        <Route path="/ko/debug/meta" element={<DebugMeta />} />
+        <Route path="/ko/debug/e2e" element={<E2ETest />} />
         <Route path="/ko/health" element={<Health />} />
+        <Route path="/ko/health-i18n" element={<HealthI18n />} />
         <Route path="/ko/auth" element={<Auth />} />
         <Route path="/ko/app" element={<Dashboard />} />
         <Route path="/ko/app/teams/:slug" element={<TeamDetail />} />
