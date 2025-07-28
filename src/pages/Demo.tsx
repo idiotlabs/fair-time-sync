@@ -54,11 +54,11 @@ const Demo = () => {
     const isKoreanRoute = location.pathname.startsWith('/ko');
     
     updateMetaTags({
+      ogImage: '/og-demo.png',
+      ogTitle: 'FairMeet — Live Demo',
+      ogDescription: 'See fair meeting time suggestions without signing up.',
       title: isKoreanRoute ? 'FairMeet 데모 — 공정한 회의 시간 추천' : 'FairMeet Demo — Fair Meeting Time Suggestions',
       description: isKoreanRoute ? '시간대별로 공정한 회의 시간을 추천받아보세요. 가입 없이 체험 가능합니다.' : 'Experience fair meeting time recommendations across time zones. Try without signup.',
-      ogTitle: isKoreanRoute ? 'FairMeet 데모' : 'FairMeet Demo',
-      ogDescription: isKoreanRoute ? '공정한 회의 시간 추천을 체험해보세요' : 'Experience fair meeting time recommendations',
-      ogImage: '/og-demo.png',
       ogUrl: `https://fair-time-sync.lovable.app${location.pathname}`
     });
 
