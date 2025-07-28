@@ -11,6 +11,7 @@ import { downloadICS, openGoogleCalendar, maskEmail, CalendarEvent } from '@/lib
 import { logEvent } from '@/lib/event-logger';
 import { useTranslation } from '@/hooks/useTranslation';
 import { updateMetaTags, resetMetaTags } from '@/lib/meta-utils';
+import CalendarQATest from '@/components/CalendarQATest';
 
 interface Member {
   id: string;
@@ -362,6 +363,11 @@ const Demo = () => {
                 </Card>
               );
             })}
+          </div>
+
+          {/* Calendar QA Testing Section */}
+          <div className="mt-12">
+            <CalendarQATest />
           </div>
 
           {/* Call to Action */}
