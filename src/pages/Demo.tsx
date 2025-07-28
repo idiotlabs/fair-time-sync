@@ -182,9 +182,9 @@ const Demo = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center">
               <Clock className="h-16 w-16 text-primary mx-auto mb-4 animate-spin" />
-              <h1 className="text-3xl font-bold mb-4">데모 데이터 준비 중...</h1>
+              <h1 className="text-3xl font-bold mb-4">{t('demo.loading')}</h1>
               <p className="text-muted-foreground">
-                샘플 팀과 회의 추천을 생성하고 있습니다.
+                {t('demo.loadingSubtitle')}
               </p>
             </div>
           </div>
@@ -198,11 +198,11 @@ const Demo = () => {
       <div className="min-h-screen bg-gradient-to-br from-background to-secondary">
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold mb-4 text-destructive">오류 발생</h1>
-              <p className="text-muted-foreground mb-6">{error}</p>
-              <Button onClick={loadDemoData}>다시 시도</Button>
-            </div>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-4 text-destructive">{t('demo.errorTitle')}</h1>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={loadDemoData}>{t('demo.retry')}</Button>
+          </div>
           </div>
         </div>
       </div>
@@ -215,10 +215,10 @@ const Demo = () => {
       <header className="border-b bg-background/80 backdrop-blur">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link to="/">
+            <Link to={createPath('/')}>
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                돌아가기
+                {t('demo.backToHome')}
               </Button>
             </Link>
             <div className="flex items-center space-x-2">
@@ -226,7 +226,7 @@ const Demo = () => {
               <span className="text-2xl font-bold text-gradient">FairMeet</span>
             </div>
           </div>
-          <Badge variant="secondary">데모</Badge>
+          <Badge variant="secondary">{t('demo.badge')}</Badge>
         </div>
       </header>
 
@@ -235,23 +235,23 @@ const Demo = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">
-              샘플 팀 회의 추천
+              {t('demo.sampleTeamMeeting')}
             </h1>
             <p className="text-xl text-muted-foreground mb-6">
-              4명의 글로벌 팀원을 위한 공정한 회의 시간 추천을 확인해보세요
+              {t('demo.subtitle')}
             </p>
             <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                PT, UTC, IST, KST 타임존
+                {t('demo.timezones')}
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                45분 회의
+                {t('demo.meetingDuration')}
               </div>
               <div className="flex items-center gap-2">
                 <Star className="h-4 w-4" />
-                공정성 로테이션 활성화
+                {t('demo.fairnessEnabled')}
               </div>
             </div>
           </div>
@@ -274,7 +274,7 @@ const Demo = () => {
                       </div>
                       <div className="flex gap-2">
                         <Badge variant="secondary">
-                          팀 시간: {teamLocalTime}
+                          {t('demo.teamTime')}: {teamLocalTime}
                         </Badge>
                       </div>
                     </div>
@@ -289,7 +289,7 @@ const Demo = () => {
                               {Math.round(suggestion.overlap_ratio * 100)}%
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              겹치는 시간
+                              {t('demo.overlap')}
                             </div>
                           </div>
                           <div className="text-center p-3 bg-green-500/5 rounded-lg">
@@ -297,7 +297,7 @@ const Demo = () => {
                               {Math.round(suggestion.fairness_score * 100)}%
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              공정성 점수
+                              {t('demo.fairness')}
                             </div>
                           </div>
                         </div>
@@ -307,7 +307,7 @@ const Demo = () => {
                             Δ +{Math.round((1 - suggestion.fairness_score) * 100)}%
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            선택 시 공정성 개선
+                            {t('demo.fairnessImprovement')}
                           </div>
                         </div>
                       </div>
@@ -315,7 +315,7 @@ const Demo = () => {
                       {/* Right: Attendees and Actions */}
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold mb-2">참석자 ({suggestion.attendingMembers.length}명)</h4>
+                          <h4 className="font-semibold mb-2">{t('demo.attendees')} ({suggestion.attendingMembers.length}명)</h4>
                           <div className="space-y-2">
                             {suggestion.attendingMembers.map(member => {
                               const memberLocalTime = formatLocalTime(suggestion.starts_at_utc, member.timezone);
@@ -346,7 +346,7 @@ const Demo = () => {
                             className="flex-1"
                           >
                             <Download className="h-4 w-4 mr-2" />
-                            ICS 다운로드
+                            {t('demo.downloadICS')}
                           </Button>
                           <Button 
                             onClick={() => generateGoogleCalendarLink(suggestion)}
@@ -354,7 +354,7 @@ const Demo = () => {
                             className="flex-1"
                           >
                             <Calendar className="h-4 w-4 mr-2" />
-                            Google 캘린더
+                            {t('demo.addToGoogle')}
                           </Button>
                         </div>
                       </div>
@@ -372,18 +372,18 @@ const Demo = () => {
 
           {/* Call to Action */}
           <div className="text-center mt-12 p-8 bg-primary/5 rounded-lg">
-            <h3 className="text-2xl font-bold mb-4">FairMeet으로 시작해보세요</h3>
+            <h3 className="text-2xl font-bold mb-4">{t('demo.callToActionTitle')}</h3>
             <p className="text-muted-foreground mb-6">
-              팀을 위한 공정한 회의 스케줄링을 지금 바로 경험해보세요
+              {t('demo.callToActionDesc')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth">
+              <Link to={createPath('/auth')}>
                 <Button size="lg" className="btn-gradient">
-                  무료로 시작하기
+                  {t('demo.startFree')}
                 </Button>
               </Link>
               <Button size="lg" variant="outline" onClick={loadDemoData}>
-                새 추천 생성
+                {t('demo.generateNew')}
               </Button>
             </div>
           </div>

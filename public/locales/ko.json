@@ -244,6 +244,54 @@
     "description": "회의 시간 추천 결과를 확인하세요.",
     "suggestedTimes": "추천 회의 시간"
   },
+  "demo": {
+    "title": "라이브 데모",
+    "badge": "데모",
+    "backToHome": "돌아가기",
+    "errorTitle": "오류 발생",
+    "loading": "샘플 팀을 생성하고 회의 시간을 추천하고 있습니다...",
+    "loadingButton": "로딩 중...",
+    "retry": "다시 시도",
+    "generateNew": "새 추천 생성", 
+    "teamMeeting": "팀 회의",
+    "downloadICS": "ICS 다운로드",
+    "addToGoogle": "Google 캘린더",
+    "callToActionTitle": "FairMeet으로 시작해보세요",
+    "callToActionDesc": "팀을 위한 공정한 회의 스케줄링을 지금 바로 경험해보세요",
+    "startFree": "무료로 시작하기",
+    "generateNewButton": "새 추천 생성",
+    "overlap": "겹침률",
+    "fairness": "공정성",
+    "deltaFairness": "Δ 공정성",
+    "required": "필수참석",
+    "teamTime": "팀 시간",
+    "localTime": "현지 시간",
+    "subtitle": "4명의 글로벌 팀원을 위한 공정한 회의 시간 추천을 확인해보세요",
+    "loadingSubtitle": "샘플 팀과 회의 추천을 생성하고 있습니다.",
+    "timezones": "PT, UTC, IST, KST 타임존",
+    "meetingDuration": "45분 회의",
+    "fairnessEnabled": "공정성 로테이션 활성화",
+    "attendees": "참석자",
+    "attendeesCount": "{{count}}명",
+    "overlapTime": "겹치는 시간",
+    "fairnessScore": "공정성 점수",
+    "fairnessImprovement": "선택 시 공정성 개선",
+    "sampleTeamMeeting": "샘플 팀 회의 추천",
+    "meeting": {
+      "title": "팀 회의",
+      "description": "분산팀 협업을 위한 데모 회의",
+      "duration": "시간: 45분",
+      "fairnessScore": "공정성 점수: {{score}}%",
+      "overlapRatio": "겹침률: {{ratio}}%"
+    }
+  },
+  "errors": {
+    "freeLimit": "무료 플랜 한도에 도달했습니다. 업그레이드하여 계속 사용하세요.",
+    "generalError": "오류가 발생했습니다. 다시 시도해주세요."
+  },
+  "common": {
+    "loading": "로딩 중..."
+  },
   "watermark": {
     "poweredBy": "Powered by FairMeet"
   }

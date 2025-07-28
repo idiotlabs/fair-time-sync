@@ -240,6 +240,54 @@
     "description": "Review meeting time suggestions.",
     "suggestedTimes": "Suggested Meeting Times"
   },
+  "demo": {
+    "title": "Live Demo",
+    "badge": "Demo",
+    "backToHome": "Back",
+    "errorTitle": "Error Occurred", 
+    "loading": "Loading sample team and generating meeting suggestions...",
+    "loadingButton": "Loading...",
+    "retry": "Try Again",
+    "generateNew": "Generate New Recommendations",
+    "teamMeeting": "Team Meeting",
+    "downloadICS": "Download ICS",
+    "addToGoogle": "Google Calendar",
+    "callToActionTitle": "Get Started with FairMeet",
+    "callToActionDesc": "Experience fair meeting scheduling for your team right now",
+    "startFree": "Start Free",
+    "generateNewButton": "Generate New",
+    "overlap": "Overlap",
+    "fairness": "Fairness",
+    "deltaFairness": "Δ Fairness", 
+    "required": "Required",
+    "teamTime": "Team time",
+    "localTime": "Local time",
+    "subtitle": "Check fair meeting time suggestions for 4 global team members",
+    "loadingSubtitle": "Generating sample team and meeting suggestions.",
+    "timezones": "PT, UTC, IST, KST timezones",
+    "meetingDuration": "45-minute meeting",
+    "fairnessEnabled": "Fairness rotation enabled",
+    "attendees": "Attendees",
+    "attendeesCount": "{{count}} members",
+    "overlapTime": "Overlap time",
+    "fairnessScore": "Fairness score",
+    "fairnessImprovement": "Fairness improvement if selected",
+    "sampleTeamMeeting": "Sample Team Meeting Recommendations",
+    "meeting": {
+      "title": "Team Meeting",
+      "description": "Demo meeting for distributed team collaboration",
+      "duration": "Duration: 45 minutes",
+      "fairnessScore": "Fairness Score: {{score}}%",
+      "overlapRatio": "Overlap Ratio: {{ratio}}%"
+    }
+  },
+  "errors": {
+    "freeLimit": "You've reached the Free plan limit. Upgrade to continue.",
+    "generalError": "An error occurred. Please try again."
+  },
+  "common": {
+    "loading": "Loading..."
+  },
   "watermark": {
     "poweredBy": "Powered by FairMeet"
   }
