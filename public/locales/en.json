@@ -22,25 +22,29 @@
   "features": {
     "title": "Key Features",
     "subtitle": "Everything you need for fair meeting scheduling",
-    "fairnessEngine": {
-      "title": "Fairness engine",
-      "description": "Rotate meeting times so no one always pays the late-night tax."
+    "smartRecommendations": {
+      "title": "Smart Recommendations",
+      "description": "AI-powered algorithm analyzes team members' time zones and working hours to suggest optimal meeting times."
     },
-    "smartOverlap": {
-      "title": "Smart overlap", 
-      "description": "Suggest the best slots based on working hours, no-meeting blocks, and required attendees."
+    "fairnessScore": {
+      "title": "Fairness Score",
+      "description": "Quantify each team member's time zone burden and ensure fair distribution of inconvenient meeting times."
     },
-    "focusGuard": {
-      "title": "Focus guard",
-      "description": "Avoid back-to-back marathons and preserve deep-work blocks."
+    "rotationSystem": {
+      "title": "Rotation System",
+      "description": "Rotate the burden of inconvenient time zones among team members to ensure long-term fairness."
     },
-    "calendarReady": {
-      "title": "Calendar ready",
-      "description": "One-click export to Google Calendar or ICS."
+    "multiTimezone": {
+      "title": "Multi-Timezone Support",
+      "description": "Support all time zones worldwide and display meeting information in each member's local time."
     },
-    "shareToDecide": {
-      "title": "Share to decide",
-      "description": "A read-only link your team can review without signing up."
+    "calendarIntegration": {
+      "title": "Calendar Integration",
+      "description": "Integrate with major calendar services like Google Calendar and Outlook for one-click schedule addition."
+    },
+    "teamSharing": {
+      "title": "Team Sharing",
+      "description": "Easily share meeting suggestions with team members and manage decision processes transparently with read-only links."
     }
   },
   "pricing": {

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Globe, Calendar, Download, Users, Clock, Star, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { ko, enUS } from 'date-fns/locale';
 import { downloadICS, openGoogleCalendar, maskEmail, CalendarEvent } from '@/lib/calendar-utils';
 import { logEvent } from '@/lib/event-logger';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -167,7 +167,8 @@ const Demo = () => {
 
   const formatLocalTime = (utcTime: string, timezone: string) => {
     const date = new Date(utcTime);
-    return new Intl.DateTimeFormat('ko-KR', {
+    const localeCode = locale === 'ko' ? 'ko-KR' : 'en-US';
+    return new Intl.DateTimeFormat(localeCode, {
       timeZone: timezone,
       hour: '2-digit',
       minute: '2-digit',
@@ -269,7 +270,7 @@ const Demo = () => {
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">#{index + 1}</Badge>
                         <CardTitle className="text-lg">
-                          {format(startTime, 'M월 d일 (E)', { locale: ko })}
+                          {format(startTime, locale === 'ko' ? 'M월 d일 (E)' : 'MMM d (E)', { locale: locale === 'ko' ? ko : enUS })}
                         </CardTitle>
                       </div>
                       <div className="flex gap-2">
@@ -315,7 +316,7 @@ const Demo = () => {
                       {/* Right: Attendees and Actions */}
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold mb-2">{t('demo.attendees')} ({suggestion.attendingMembers.length}명)</h4>
+                          <h4 className="font-semibold mb-2">{t('demo.attendees')} ({suggestion.attendingMembers.length}{locale === 'ko' ? '명' : ' members'})</h4>
                           <div className="space-y-2">
                             {suggestion.attendingMembers.map(member => {
                               const memberLocalTime = formatLocalTime(suggestion.starts_at_utc, member.timezone);
