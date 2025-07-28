@@ -63,6 +63,84 @@
       ]
     }
     </script>
+
+    <!-- SEO Diagnostic Script -->
+    <script>
+      (function() {
+        // SEO diagnostic function
+        function checkSEOElements() {
+          const diag = {
+            title: !!document.title && document.title.trim() !== '',
+            description: !!document.querySelector('meta[name="description"]'),
+            og: {
+              title: !!document.querySelector('meta[property="og:title"]'),
+              description: !!document.querySelector('meta[property="og:description"]'),
+              image: !!document.querySelector('meta[property="og:image"]'),
+              url: !!document.querySelector('meta[property="og:url"]'),
+              type: !!document.querySelector('meta[property="og:type"]')
+            },
+            twitter: {
+              card: !!document.querySelector('meta[name="twitter:card"]'),
+              title: !!document.querySelector('meta[name="twitter:title"]'),
+              description: !!document.querySelector('meta[name="twitter:description"]'),
+              image: !!document.querySelector('meta[name="twitter:image"]')
+            },
+            canonical: !!document.querySelector('link[rel="canonical"]'),
+            hreflang: document.querySelectorAll('link[rel="alternate"][hreflang]').length > 0,
+            structuredData: document.querySelectorAll('script[type="application/ld+json"]').length > 0
+          };
+
+          // Calculate overall score
+          const totalChecks = 11; // Basic SEO elements
+          let passedChecks = 0;
+          
+          if (diag.title) passedChecks++;
+          if (diag.description) passedChecks++;
+          if (diag.og.title) passedChecks++;
+          if (diag.og.description) passedChecks++;
+          if (diag.og.image) passedChecks++;
+          if (diag.og.url) passedChecks++;
+          if (diag.twitter.card) passedChecks++;
+          if (diag.twitter.image) passedChecks++;
+          if (diag.canonical) passedChecks++;
+          if (diag.hreflang) passedChecks++;
+          if (diag.structuredData) passedChecks++;
+
+          diag.score = Math.round((passedChecks / totalChecks) * 100);
+          
+          return diag;
+        }
+
+        // Set up global diagnostic object
+        window.__SEO_DIAG__ = checkSEOElements();
+        
+        // Log to console in production only
+        if (window.location.hostname !== 'localhost') {
+          console.group('🔍 SEO Diagnostics');
+          console.log('Overall Score:', window.__SEO_DIAG__.score + '%');
+          console.log('Title:', window.__SEO_DIAG__.title ? '✅' : '❌');
+          console.log('Description:', window.__SEO_DIAG__.description ? '✅' : '❌');
+          console.log('Open Graph:', window.__SEO_DIAG__.og);
+          console.log('Twitter Cards:', window.__SEO_DIAG__.twitter);
+          console.log('Canonical:', window.__SEO_DIAG__.canonical ? '✅' : '❌');
+          console.log('Hreflang:', window.__SEO_DIAG__.hreflang ? '✅' : '❌');
+          console.log('Structured Data:', window.__SEO_DIAG__.structuredData ? '✅' : '❌');
+          console.groupEnd();
+        }
+
+        // Update diagnostic on navigation (for SPAs)
+        let lastUrl = location.href;
+        new MutationObserver(() => {
+          const url = location.href;
+          if (url !== lastUrl) {
+            lastUrl = url;
+            setTimeout(() => {
+              window.__SEO_DIAG__ = checkSEOElements();
+            }, 100);
+          }
+        }).observe(document, { subtree: true, childList: true });
+      })();
+    </script>
   </head>
 
   <body>

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { downloadICS, openGoogleCalendar, maskEmail, CalendarEvent } from '@/lib/calendar-utils';
+import { logEvent } from '@/lib/event-logger';
 
 interface Member {
   id: string;
@@ -90,6 +91,17 @@ const Demo = () => {
     };
 
     downloadICS(event);
+    
+    // Log the export event
+    logEvent({
+      eventType: 'slot_exported',
+      metadata: {
+        format: 'ics',
+        suggestionId: suggestion.id,
+        attendeeCount: suggestion.attendingMembers.length,
+        source: 'demo'
+      }
+    });
   };
 
   const generateGoogleCalendarLink = (suggestion: SuggestionWithMembers) => {
@@ -108,6 +120,17 @@ const Demo = () => {
     };
 
     openGoogleCalendar(event);
+    
+    // Log the export event
+    logEvent({
+      eventType: 'slot_exported',
+      metadata: {
+        format: 'google_calendar',
+        suggestionId: suggestion.id,
+        attendeeCount: suggestion.attendingMembers.length,
+        source: 'demo'
+      }
+    });
   };
 
   const formatLocalTime = (utcTime: string, timezone: string) => {
