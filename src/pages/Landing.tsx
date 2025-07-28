@@ -12,7 +12,7 @@ const Landing = () => {
       <header className="border-b bg-background/80 backdrop-blur">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Globe className="h-8 w-8 text-primary" />
+            <Globe className="h-8 w-8 text-primary" aria-hidden="true" />
             <span className="text-2xl font-bold text-gradient">FairMeet</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
@@ -66,7 +66,7 @@ const Landing = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card className="card-elegant">
             <CardHeader>
-              <Clock className="h-10 w-10 text-primary mb-2" />
+              <Clock className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>스마트 시간 추천</CardTitle>
               <CardDescription>
                 AI 기반 알고리즘으로 팀원들의 시간대와 근무 시간을 분석하여 최적의 회의 시간을 제안합니다.
@@ -76,7 +76,7 @@ const Landing = () => {
 
           <Card className="card-elegant">
             <CardHeader>
-              <Users className="h-10 w-10 text-primary mb-2" />
+              <Users className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>공정성 점수</CardTitle>
               <CardDescription>
                 각 팀원의 시간대 부담을 정량화하여 공정성 점수를 제공하고, 부담을 균등하게 분배합니다.
@@ -86,7 +86,7 @@ const Landing = () => {
 
           <Card className="card-elegant">
             <CardHeader>
-              <Zap className="h-10 w-10 text-primary mb-2" />
+              <Zap className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>순환 시스템</CardTitle>
               <CardDescription>
                 불편한 시간대의 회의 부담을 팀원들 간에 순환하여 장기적으로 공정한 분배를 보장합니다.
@@ -96,7 +96,7 @@ const Landing = () => {
 
           <Card className="card-elegant">
             <CardHeader>
-              <Globe className="h-10 w-10 text-primary mb-2" />
+              <Globe className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>다국적 팀 지원</CardTitle>
               <CardDescription>
                 전 세계 모든 시간대를 지원하며, 각 팀원의 현지 시간으로 회의 정보를 표시합니다.
@@ -106,7 +106,7 @@ const Landing = () => {
 
           <Card className="card-elegant">
             <CardHeader>
-              <Shield className="h-10 w-10 text-primary mb-2" />
+              <Shield className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>캘린더 통합</CardTitle>
               <CardDescription>
                 Google Calendar, Outlook 등 주요 캘린더 서비스와 연동하여 원클릭으로 일정을 추가할 수 있습니다.
@@ -116,7 +116,7 @@ const Landing = () => {
 
           <Card className="card-elegant">
             <CardHeader>
-              <Star className="h-10 w-10 text-primary mb-2" />
+              <Star className="h-10 w-10 text-primary mb-2" aria-hidden="true" />
               <CardTitle>팀 공유</CardTitle>
               <CardDescription>
                 회의 제안을 팀원들과 쉽게 공유하고, 읽기 전용 링크로 의사결정 과정을 투명하게 관리합니다.
@@ -242,7 +242,7 @@ const Landing = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <Globe className="h-6 w-6 text-primary" />
+              <Globe className="h-6 w-6 text-primary" aria-hidden="true" />
               <span className="text-lg font-bold">FairMeet</span>
             </div>
             <div className="flex space-x-6 text-sm text-muted-foreground">
