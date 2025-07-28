@@ -13,38 +13,34 @@
   },
   "hero": {
     "badge": "The New Standard for Fair Meeting Scheduling",
-    "title": "Meet fairly across",
-    "titleHighlight": "time zones",
-    "description": "Fair meeting time recommendation system for distributed teams. Distribute timezone burden equally and find optimal overlapping times.",
-    "cta": "Start Free",
-    "demo": "View Demo"
+    "title": "Meet fairly across time zones",
+    "titleHighlight": "",
+    "description": "Rotate obligations, protect focus, and agree faster.",
+    "cta": "Start free",
+    "demo": "Try the live demo"
   },
   "features": {
     "title": "Key Features",
     "subtitle": "Everything you need for fair meeting scheduling",
-    "smartRecommendations": {
-      "title": "Smart Time Recommendations",
-      "description": "AI-powered algorithm analyzes team members' time zones and working hours to suggest optimal meeting times."
+    "fairnessEngine": {
+      "title": "Fairness engine",
+      "description": "Rotate meeting times so no one always pays the late-night tax."
     },
-    "fairnessScore": {
-      "title": "Fairness Score",
-      "description": "Quantifies each team member's timezone burden and provides fairness scores to ensure equal distribution."
+    "smartOverlap": {
+      "title": "Smart overlap", 
+      "description": "Suggest the best slots based on working hours, no-meeting blocks, and required attendees."
     },
-    "rotationSystem": {
-      "title": "Rotation System", 
-      "description": "Rotates the burden of inconvenient meeting times among team members to ensure long-term fairness."
+    "focusGuard": {
+      "title": "Focus guard",
+      "description": "Avoid back-to-back marathons and preserve deep-work blocks."
     },
-    "multiTimezone": {
-      "title": "Multi-timezone Support",
-      "description": "Supports all global time zones and displays meeting information in each team member's local time."
+    "calendarReady": {
+      "title": "Calendar ready",
+      "description": "One-click export to Google Calendar or ICS."
     },
-    "calendarIntegration": {
-      "title": "Calendar Integration",
-      "description": "Integrates with major calendar services like Google Calendar and Outlook for one-click schedule addition."
-    },
-    "teamSharing": {
-      "title": "Team Sharing",
-      "description": "Easily share meeting suggestions with team members and manage decision processes transparently with read-only links."
+    "shareToDecide": {
+      "title": "Share to decide",
+      "description": "A read-only link your team can review without signing up."
     }
   },
   "pricing": {
