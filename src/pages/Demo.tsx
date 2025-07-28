@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { ko } from 'date-fns/locale';
 import { downloadICS, openGoogleCalendar, maskEmail, CalendarEvent } from '@/lib/calendar-utils';
 import { logEvent } from '@/lib/event-logger';
 import { useTranslation } from '@/hooks/useTranslation';
+import { updateMetaTags, resetMetaTags } from '@/lib/meta-utils';
 
 interface Member {
   id: string;
@@ -34,6 +35,7 @@ interface SuggestionWithMembers extends Suggestion {
 
 const Demo = () => {
   const { t, locale } = useTranslation();
+  const location = useLocation();
   const [suggestions, setSuggestions] = useState<SuggestionWithMembers[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,25 @@ const Demo = () => {
     }
     return path;
   };
+
+  useEffect(() => {
+    // Update meta tags for demo page
+    const isKoreanRoute = location.pathname.startsWith('/ko');
+    
+    updateMetaTags({
+      title: isKoreanRoute ? 'FairMeet 데모 — 공정한 회의 시간 추천' : 'FairMeet Demo — Fair Meeting Time Suggestions',
+      description: isKoreanRoute ? '시간대별로 공정한 회의 시간을 추천받아보세요. 가입 없이 체험 가능합니다.' : 'Experience fair meeting time recommendations across time zones. Try without signup.',
+      ogTitle: isKoreanRoute ? 'FairMeet 데모' : 'FairMeet Demo',
+      ogDescription: isKoreanRoute ? '공정한 회의 시간 추천을 체험해보세요' : 'Experience fair meeting time recommendations',
+      ogImage: '/og-demo.png',
+      ogUrl: `https://fair-time-sync.lovable.app${location.pathname}`
+    });
+
+    // Cleanup: reset meta tags when component unmounts
+    return () => {
+      resetMetaTags();
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     loadDemoData();

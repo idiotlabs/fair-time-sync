@@ -233,7 +233,12 @@
     "teamLocal": "Team time",
     "localTime": "Local time",
     "noSuggestions": "No meeting suggestions found",
-    "noSuggestionsSubtitle": "The team hasn't generated any recommendations yet"
+    "noSuggestionsSubtitle": "The team hasn't generated any recommendations yet",
+    "notFound": "Shared link not found.",
+    "linkNotFound": "Link not found",
+    "sharedLink": "Shared Link",
+    "description": "Review meeting time suggestions.",
+    "suggestedTimes": "Suggested Meeting Times"
   },
   "watermark": {
     "poweredBy": "Powered by FairMeet"
