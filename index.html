@@ -63,6 +63,17 @@
     }
     </script>
 
+    <!-- Preview Domain Protection -->
+    <script>
+      // Prevent indexing of preview domains
+      if (window.location.hostname.includes('preview--')) {
+        const robotsMeta = document.createElement('meta');
+        robotsMeta.name = 'robots';
+        robotsMeta.content = 'noindex,nofollow';
+        document.head.appendChild(robotsMeta);
+      }
+    </script>
+
     <!-- SEO Diagnostic Script -->
     <script>
       (function() {
