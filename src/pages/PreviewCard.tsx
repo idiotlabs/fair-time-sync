@@ -1,9 +1,52 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Code, Image } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Globe, Code, Image, TestTube, Download } from 'lucide-react';
+import { generateTestCases, downloadICS, CalendarEvent, formatTimeInTimezone } from '@/lib/calendar-utils';
+import { useState } from 'react';
 
 const PreviewCard = () => {
+  const [testResults, setTestResults] = useState<string[]>([]);
+
+  const runICSTests = () => {
+    const testCases = generateTestCases();
+    const results: string[] = [];
+
+    testCases.forEach((testCase, index) => {
+      try {
+        const event: CalendarEvent = {
+          id: `test-${index}`,
+          teamId: 'test-team',
+          title: `Test Event: ${testCase.name}`,
+          description: testCase.description,
+          startTime: testCase.startTime,
+          endTime: testCase.endTime,
+          attendees: [
+            { name: 'Test User 1', email: 'test1@example.com' },
+            { name: 'Test User 2', email: 'test2@example.com' }
+          ],
+          location: 'Virtual Test Meeting'
+        };
+
+        // Generate ICS and download
+        downloadICS(event, `test-${index}-${testCase.name.replace(/\s+/g, '-').toLowerCase()}.ics`);
+        
+        const startLocal = formatTimeInTimezone(testCase.startTime, testCase.timezone);
+        const endLocal = formatTimeInTimezone(testCase.endTime, testCase.timezone);
+        
+        results.push(
+          `✅ ${testCase.name}: ${startLocal} → ${endLocal}`
+        );
+      } catch (error) {
+        results.push(
+          `❌ ${testCase.name}: Error - ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    });
+
+    setTestResults(results);
+  };
   const getMetaTags = () => {
     const metaTags = [
       { property: 'og:title', content: 'FairMeet — Fair Meeting Scheduler for Distributed Teams' },
@@ -223,6 +266,55 @@ const PreviewCard = () => {
                   >
                     Google Rich Results Test →
                   </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Calendar Export Testing */}
+          <Card className="card-elegant">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TestTube className="h-5 w-5" />
+                캘린더 내보내기 테스트
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    다양한 타임존 시나리오를 테스트하고 ICS 파일을 생성합니다.
+                  </p>
+                  <Button onClick={runICSTests} className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Run ICS Test
+                  </Button>
+                </div>
+                
+                {testResults.length > 0 && (
+                  <div className="mt-4 p-4 bg-muted rounded">
+                    <h4 className="font-semibold mb-2">Test Results:</h4>
+                    <div className="space-y-1 text-sm font-mono">
+                      {testResults.map((result, index) => (
+                        <div key={index} className={result.startsWith('✅') ? 'text-green-600' : 'text-red-600'}>
+                          {result}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      ICS 파일들이 다운로드 폴더에 저장되었습니다. 각 파일을 캘린더 앱에서 열어 시간이 정확한지 확인하세요.
+                    </p>
+                  </div>
+                )}
+
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">테스트 케이스:</h4>
+                  <ul className="text-sm space-y-1 text-blue-800 dark:text-blue-200">
+                    <li>• KST Standard Time - 한국 저녁 시간 회의</li>
+                    <li>• PST/PDT Transition - 서머타임 전환 기간</li>
+                    <li>• UTC Meeting - 표준 UTC 시간</li>
+                    <li>• Cross-Date Boundary - 날짜 경계 넘나드는 회의</li>
+                  </ul>
                 </div>
               </div>
             </CardContent>
