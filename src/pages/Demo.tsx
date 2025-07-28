@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { downloadICS, openGoogleCalendar, maskEmail, CalendarEvent } from '@/lib/calendar-utils';
 import { logEvent } from '@/lib/event-logger';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Member {
   id: string;
@@ -32,9 +33,18 @@ interface SuggestionWithMembers extends Suggestion {
 }
 
 const Demo = () => {
+  const { t, locale } = useTranslation();
   const [suggestions, setSuggestions] = useState<SuggestionWithMembers[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Create locale-aware paths
+  const createPath = (path: string) => {
+    if (locale === 'ko') {
+      return path === '/' ? '/ko' : `/ko${path}`;
+    }
+    return path;
+  };
 
   useEffect(() => {
     loadDemoData();
@@ -79,8 +89,8 @@ const Demo = () => {
     const event: CalendarEvent = {
       id: suggestion.id,
       teamId: 'sample-team',
-      title: 'FairMeet — Sample Team Meeting',
-      description: `Demo meeting for distributed team collaboration.\n\nMeeting Details:\n- Duration: 45 minutes\n- Fairness Score: ${Math.round(suggestion.fairness_score * 100)}%\n- Overlap Ratio: ${Math.round(suggestion.overlap_ratio * 100)}%`,
+      title: t('demo.meeting.title'),
+      description: `${t('demo.meeting.description')}.\n\n${t('demo.meeting.duration')}\n${t('demo.meeting.fairnessScore', { score: Math.round(suggestion.fairness_score * 100) })}\n${t('demo.meeting.overlapRatio', { ratio: Math.round(suggestion.overlap_ratio * 100) })}`,
       startTime: new Date(suggestion.starts_at_utc),
       endTime: new Date(suggestion.ends_at_utc),
       attendees: suggestion.attendingMembers.map(member => ({
