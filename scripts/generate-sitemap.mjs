@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { writeFileSync } from 'fs';
+import { writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,7 +8,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(__dirname, '..', 'public');
 
 const baseUrl = 'https://fair-time-sync.lovable.app';
-const lastmod = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
+const now = new Date().toISOString(); // Full ISO timestamp
 
 // Define routes with their alternate languages
 const routes = [
@@ -62,7 +63,7 @@ function generateSitemap() {
 
     return `  <url>
     <loc>${baseUrl}${route.path}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${route.path === '/' ? '1.0' : '0.8'}</priority>${alternateLinks ? '\n' + alternateLinks : ''}
   </url>`;
@@ -77,13 +78,33 @@ ${urls}
   const sitemapPath = join(publicDir, 'sitemap.xml');
   writeFileSync(sitemapPath, sitemap, 'utf8');
   console.log(`✅ Sitemap generated: ${sitemapPath}`);
-  console.log(`📅 Last modified: ${lastmod}`);
+  console.log(`📅 Last modified: ${today}`);
 }
 
-// Generate sitemap
+function generateHealthCheck() {
+  const healthData = {
+    status: 'healthy',
+    timestamp: now,
+    prerender: true,
+    files: {
+      sitemap: existsSync(join(publicDir, 'sitemap.xml')),
+      robots: existsSync(join(publicDir, 'robots.txt')),
+      ogCover: existsSync(join(publicDir, 'og-cover-en.png')),
+      ogDemo: existsSync(join(publicDir, 'og-demo.png'))
+    }
+  };
+
+  const healthPath = join(publicDir, 'health.json');
+  writeFileSync(healthPath, JSON.stringify(healthData, null, 2), 'utf8');
+  console.log(`✅ Health check generated: ${healthPath}`);
+  console.log(`🕒 Timestamp: ${now}`);
+}
+
+// Generate sitemap and health check
 try {
   generateSitemap();
+  generateHealthCheck();
 } catch (error) {
-  console.error('❌ Error generating sitemap:', error);
+  console.error('❌ Error generating files:', error);
   process.exit(1);
 }
