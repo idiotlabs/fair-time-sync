@@ -64,6 +64,9 @@ test_otp = "123456"
 [functions.create-sample-team]
 verify_jwt = false
 
+[functions.get-demo-data]
+verify_jwt = false
+
 [edge_runtime]
 policy = "per_worker"
 inspector_port = 8083

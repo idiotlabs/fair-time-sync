@@ -44,46 +44,25 @@ const Demo = () => {
       
       // First, ensure sample team exists
       console.log('Creating sample team...');
-      const response = await supabase.functions.invoke('create-sample-team');
+      const createResponse = await supabase.functions.invoke('create-sample-team');
       
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (createResponse.error) {
+        throw new Error(createResponse.error.message);
       }
 
-      // Get the sample team
-      const { data: team } = await supabase
-        .from('teams')
-        .select('id')
-        .eq('slug', 'sample-distributed-team')
-        .single();
-
-      if (!team) {
-        throw new Error('Sample team not found');
+      // Get demo data through the dedicated function
+      console.log('Getting demo data...');
+      const demoResponse = await supabase.functions.invoke('get-demo-data');
+      
+      if (demoResponse.error) {
+        throw new Error(demoResponse.error.message);
       }
 
-      // Get team members
-      const { data: members } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('team_id', team.id);
-
-      // Get suggestions
-      const { data: suggestionsData } = await supabase
-        .from('suggestions')
-        .select('*')
-        .eq('team_id', team.id)
-        .order('starts_at_utc')
-        .limit(5);
-
-      if (suggestionsData && members) {
-        const suggestionsWithMembers = suggestionsData.map(suggestion => ({
-          ...suggestion,
-          attendingMembers: members.filter(member => 
-            suggestion.attending_member_ids.includes(member.id)
-          )
-        }));
-        
-        setSuggestions(suggestionsWithMembers);
+      const { data } = demoResponse;
+      if (data && data.success && data.suggestions) {
+        setSuggestions(data.suggestions);
+      } else {
+        throw new Error('Invalid demo data response');
       }
 
     } catch (err) {
