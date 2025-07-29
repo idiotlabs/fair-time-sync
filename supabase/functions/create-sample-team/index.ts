@@ -1,3 +1,4 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -5,260 +6,214 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface TeamMember {
-  display_name: string;
-  timezone: string;
-  email: string;
-}
-
-const sampleMembers: TeamMember[] = [
-  { display_name: "Alex Chen", timezone: "America/Los_Angeles", email: "a***@company.com" },
-  { display_name: "Sarah Johnson", timezone: "Europe/London", email: "s***@company.com" },
-  { display_name: "Raj Patel", timezone: "Asia/Kolkata", email: "r***@company.com" },
-  { display_name: "Kim Min-jun", timezone: "Asia/Seoul", email: "k***@company.com" }
-];
-
-// Working blocks: Monday-Friday 09:00-17:00 (540-1020 minutes)
-const defaultWorkingBlocks = [
-  { day_of_week: 1, start_minute: 540, end_minute: 1020 }, // Monday
-  { day_of_week: 2, start_minute: 540, end_minute: 1020 }, // Tuesday
-  { day_of_week: 3, start_minute: 540, end_minute: 1020 }, // Wednesday
-  { day_of_week: 4, start_minute: 540, end_minute: 1020 }, // Thursday
-  { day_of_week: 5, start_minute: 540, end_minute: 1020 }, // Friday
-];
-
-// No meeting blocks: Lunch 12:00-13:00 (720-780 minutes)
-const defaultNoMeetingBlocks = [
-  { day_of_week: 1, start_minute: 720, end_minute: 780 },
-  { day_of_week: 2, start_minute: 720, end_minute: 780 },
-  { day_of_week: 3, start_minute: 720, end_minute: 780 },
-  { day_of_week: 4, start_minute: 720, end_minute: 780 },
-  { day_of_week: 5, start_minute: 720, end_minute: 780 },
-];
-
-function generateSuggestions(teamId: string, memberIds: string[]) {
-  const suggestions = [];
-  const now = new Date();
-  
-  // Generate 5 sample suggestions for the next week
-  for (let i = 0; i < 5; i++) {
-    const baseDate = new Date(now);
-    baseDate.setDate(now.getDate() + 1 + i); // Next 5 days
-    baseDate.setHours(14 + (i % 3), 0, 0, 0); // Stagger times
-    
-    const endDate = new Date(baseDate);
-    endDate.setMinutes(endDate.getMinutes() + 45); // 45 minute meetings
-    
-    // Simulate different overlap ratios and fairness scores
-    const overlapRatio = 0.6 + (i * 0.1); // 0.6 to 1.0
-    const fairnessScore = 0.7 + (i * 0.05); // 0.7 to 0.9
-    
-    // Randomly select 3-4 attendees
-    const numAttendees = 3 + (i % 2);
-    const attendingIds = memberIds.slice(0, numAttendees);
-    
-    suggestions.push({
-      team_id: teamId,
-      starts_at_utc: baseDate.toISOString(),
-      ends_at_utc: endDate.toISOString(),
-      attending_member_ids: attendingIds,
-      overlap_ratio: overlapRatio,
-      fairness_score: fairnessScore,
-      penalties_json: {
-        night_penalties: i % 2,
-        burden_penalties: i * 0.1,
-        adjacency_penalties: 0
-      },
-      version: 1
-    });
-  }
-  
-  return suggestions;
-}
-
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    console.log('Creating sample team...');
-
-    // Check if sample team already exists
-    const { data: existingTeam } = await supabase
-      .from('teams')
-      .select('id')
-      .eq('slug', 'sample-distributed-team')
-      .single();
-
-    let teamId: string;
-
-    if (existingTeam) {
-      console.log('Sample team already exists, using existing team');
-      teamId = existingTeam.id;
-    } else {
-      // Create sample team
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .insert({
-          name: 'Sample Distributed Team',
-          slug: 'sample-distributed-team',
-          default_timezone: 'UTC',
-          locale: 'en'
-        })
-        .select()
-        .single();
-
-      if (teamError) {
-        console.error('Error creating team:', teamError);
-        throw teamError;
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
       }
+    )
 
-      teamId = team.id;
-      console.log('Created team with ID:', teamId);
+    const authHeader = req.headers.get('Authorization')!
+    supabaseClient.auth.setSession({
+      access_token: authHeader.replace('Bearer ', ''),
+      refresh_token: '',
+    })
 
-      // Create team members
-      const memberInserts = sampleMembers.map(member => ({
-        team_id: teamId,
-        display_name: member.display_name,
-        email: member.email,
-        timezone: member.timezone,
-        role: 'member' as const
-      }));
+    const { teamId } = await req.json()
 
-      const { data: members, error: membersError } = await supabase
+    if (!teamId) {
+      return new Response(
+        JSON.stringify({ error: 'Team ID is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('Creating sample team data for team:', teamId)
+
+    // Verify user has permission to create sample data for this team
+    const { data: teamMember, error: memberError } = await supabaseClient
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', (await supabaseClient.auth.getUser()).data.user?.id)
+      .single()
+
+    if (memberError || !teamMember || !['owner', 'admin'].includes(teamMember.role)) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Sample members with different timezones
+    const sampleMembers = [
+      { 
+        name: 'Alice (PT)', 
+        timezone: 'America/Los_Angeles', 
+        email: 'alice@example.com' 
+      },
+      { 
+        name: 'Bob (UTC)', 
+        timezone: 'UTC', 
+        email: 'bob@example.com' 
+      },
+      { 
+        name: 'Charlie (IST)', 
+        timezone: 'Asia/Kolkata', 
+        email: 'charlie@example.com' 
+      },
+      { 
+        name: 'Diana (KST)', 
+        timezone: 'Asia/Seoul', 
+        email: 'diana@example.com' 
+      }
+    ]
+
+    const createdMembers = []
+
+    // Create sample members
+    for (const member of sampleMembers) {
+      const { data: newMember, error: memberError } = await supabaseClient
         .from('team_members')
-        .insert(memberInserts)
-        .select();
-
-      if (membersError) {
-        console.error('Error creating members:', membersError);
-        throw membersError;
-      }
-
-      console.log('Created members:', members.length);
-
-      // Create working blocks for each member
-      const workingBlocksInserts = [];
-      const noMeetingBlocksInserts = [];
-
-      for (const member of members) {
-        for (const block of defaultWorkingBlocks) {
-          workingBlocksInserts.push({
-            member_id: member.id,
-            ...block
-          });
-        }
-        for (const block of defaultNoMeetingBlocks) {
-          noMeetingBlocksInserts.push({
-            member_id: member.id,
-            ...block
-          });
-        }
-      }
-
-      // Insert working blocks
-      const { error: workingBlocksError } = await supabase
-        .from('working_blocks')
-        .insert(workingBlocksInserts);
-
-      if (workingBlocksError) {
-        console.error('Error creating working blocks:', workingBlocksError);
-        throw workingBlocksError;
-      }
-
-      // Insert no meeting blocks
-      const { error: noMeetingBlocksError } = await supabase
-        .from('no_meeting_blocks')
-        .insert(noMeetingBlocksInserts);
-
-      if (noMeetingBlocksError) {
-        console.error('Error creating no meeting blocks:', noMeetingBlocksError);
-        throw noMeetingBlocksError;
-      }
-
-      // Create rules
-      const { error: rulesError } = await supabase
-        .from('rules')
         .insert({
           team_id: teamId,
-          duration_minutes: 45,
-          cadence: 'weekly',
-          min_attendance_ratio: 0.6,
-          night_cap_per_week: 1,
-          prohibited_days: [0, 6], // Sunday and Saturday
-          required_member_ids: [],
-          rotation_enabled: true
-        });
+          display_name: member.name,
+          email: member.email,
+          role: 'member',
+          timezone: member.timezone
+        })
+        .select()
+        .single()
 
-      if (rulesError) {
-        console.error('Error creating rules:', rulesError);
-        throw rulesError;
+      if (memberError) {
+        console.error('Error creating member:', memberError)
+        throw memberError
       }
 
-      console.log('Created working blocks, no meeting blocks, and rules');
+      createdMembers.push(newMember)
+
+      // Create working blocks (Monday-Friday, 9:00-17:00)
+      const workingBlocks = []
+      for (let day = 1; day <= 5; day++) { // Monday to Friday
+        workingBlocks.push({
+          member_id: newMember.id,
+          day_of_week: day,
+          start_minute: 9 * 60, // 9:00 AM
+          end_minute: 17 * 60   // 5:00 PM
+        })
+      }
+
+      const { error: workingError } = await supabaseClient
+        .from('working_blocks')
+        .insert(workingBlocks)
+
+      if (workingError) {
+        console.error('Error creating working blocks:', workingError)
+        throw workingError
+      }
+
+      // Create no-meeting blocks (Lunch break 12:00-13:00)
+      const noMeetingBlocks = []
+      for (let day = 1; day <= 5; day++) { // Monday to Friday
+        noMeetingBlocks.push({
+          member_id: newMember.id,
+          day_of_week: day,
+          start_minute: 12 * 60, // 12:00 PM
+          end_minute: 13 * 60    // 1:00 PM
+        })
+      }
+
+      const { error: noMeetingError } = await supabaseClient
+        .from('no_meeting_blocks')
+        .insert(noMeetingBlocks)
+
+      if (noMeetingError) {
+        console.error('Error creating no-meeting blocks:', noMeetingError)
+        throw noMeetingError
+      }
+
+      console.log(`Created member ${member.name} with working and no-meeting blocks`)
     }
 
-    // Get team members for suggestions
-    const { data: members } = await supabase
-      .from('team_members')
-      .select('id')
-      .eq('team_id', teamId);
+    // Create sample rules
+    const { error: rulesError } = await supabaseClient
+      .from('rules')
+      .upsert({
+        team_id: teamId,
+        cadence: 'weekly',
+        duration_minutes: 45,
+        min_attendance_ratio: 0.6,
+        night_cap_per_week: 1,
+        prohibited_days: [0, 6], // Sunday and Saturday
+        rotation_enabled: true,
+        required_member_ids: []
+      })
 
-    const memberIds = members?.map(m => m.id) || [];
+    if (rulesError) {
+      console.error('Error creating rules:', rulesError)
+      throw rulesError
+    }
 
-    // Clear existing suggestions
-    await supabase
-      .from('suggestions')
-      .delete()
-      .eq('team_id', teamId);
+    console.log('Created sample rules')
 
-    // Generate and insert suggestions
-    const suggestions = generateSuggestions(teamId, memberIds);
+    // Generate suggestions immediately
+    console.log('Generating suggestions...')
     
-    const { data: insertedSuggestions, error: suggestionsError } = await supabase
-      .from('suggestions')
-      .insert(suggestions)
-      .select();
+    const { data: suggestionsData, error: suggestionsError } = await supabaseClient.functions.invoke('generate-suggestions', {
+      body: { teamId }
+    })
 
     if (suggestionsError) {
-      console.error('Error creating suggestions:', suggestionsError);
-      throw suggestionsError;
+      console.error('Error generating suggestions:', suggestionsError)
+      // Don't throw here, still return success for the sample data creation
     }
 
-    console.log('Created suggestions:', insertedSuggestions.length);
+    const suggestionsCount = suggestionsData?.suggestions || 0
+    console.log(`Generated ${suggestionsCount} suggestions`)
+
+    // Log event
+    const { error: logError } = await supabaseClient
+      .from('event_logs')
+      .insert({
+        event_type: 'member_added',
+        team_id: teamId,
+        user_id: (await supabaseClient.auth.getUser()).data.user?.id,
+        metadata: { 
+          action: 'sample_team_created',
+          members_count: createdMembers.length,
+          suggestions_generated: suggestionsCount
+        }
+      })
+
+    if (logError) {
+      console.error('Error logging event:', logError)
+    }
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        teamId,
-        suggestions: insertedSuggestions.length 
+        success: true,
+        members: createdMembers.length,
+        suggestions: suggestionsCount,
+        message: `Sample team created with ${createdMembers.length} members and ${suggestionsCount} suggestions`
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Error in create-sample-team:', error);
+    console.error('Error in create-sample-team function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
