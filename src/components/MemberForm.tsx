@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { logEvent } from '@/lib/event-logger';
+import { getToastMessage } from '@/lib/toast-messages';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -220,9 +222,23 @@ const MemberForm: React.FC<MemberFormProps> = ({
         if (noMeetingError) throw noMeetingError;
       }
 
+      // Log event
+      await logEvent({
+        eventType: 'member_added',
+        teamId,
+        metadata: { 
+          member_id: member.id,
+          member_name: data.display_name,
+          action: member ? 'updated' : 'created'
+        }
+      });
+
       toast({
         title: member ? "멤버 수정 완료" : "멤버 추가 완료",
-        description: member ? "멤버 정보가 성공적으로 수정되었습니다." : "새 멤버가 성공적으로 추가되었습니다.",
+        description: getToastMessage(
+          member ? 'member_updated_success' : 'member_added_success', 
+          'ko'
+        ),
       });
 
       onSuccess();
@@ -230,7 +246,10 @@ const MemberForm: React.FC<MemberFormProps> = ({
     } catch (error: any) {
       toast({
         title: "오류 발생",
-        description: error.message,
+        description: getToastMessage(
+          member ? 'member_updated_error' : 'member_added_error', 
+          'ko'
+        ),
         variant: "destructive",
       });
     } finally {

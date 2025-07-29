@@ -16,6 +16,8 @@ import { Settings, Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logEvent } from '@/lib/event-logger';
+import { getToastMessage } from '@/lib/toast-messages';
 
 const rulesFormSchema = z.object({
   duration_minutes: z.number().min(15).max(180),
@@ -136,16 +138,28 @@ const RulesForm: React.FC<RulesFormProps> = ({ teamId, members, onSuccess }) => 
         if (error) throw error;
       }
 
+      // Log event
+      await logEvent({
+        eventType: 'rules_updated',
+        teamId,
+        metadata: { 
+          action: existingRules ? 'updated' : 'created',
+          duration_minutes: data.duration_minutes,
+          cadence: data.cadence,
+          min_attendance_ratio: data.min_attendance_ratio
+        }
+      });
+
       toast({
         title: "규칙 저장 완료",
-        description: "회의 규칙이 성공적으로 저장되었습니다.",
+        description: getToastMessage('rules_updated_success', 'ko'),
       });
 
       onSuccess();
     } catch (error: any) {
       toast({
         title: "오류 발생",
-        description: error.message,
+        description: getToastMessage('rules_updated_error', 'ko'),
         variant: "destructive",
       });
     } finally {

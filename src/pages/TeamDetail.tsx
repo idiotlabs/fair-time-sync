@@ -14,6 +14,8 @@ import { ArrowLeft, Users, Settings, Share, Calendar, Plus, Edit, Trash2, Downlo
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import MemberForm from '@/components/MemberForm';
 import RulesForm from '@/components/RulesForm';
+import { logEvent, getEventStats } from '@/lib/event-logger';
+import { getToastMessage } from '@/lib/toast-messages';
 
 interface Team {
   id: string;
@@ -61,6 +63,7 @@ const TeamDetail = () => {
   const [rules, setRules] = useState<any>(null);
   const [creatingShareLink, setCreatingShareLink] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
+  const [eventStats, setEventStats] = useState<{ suggestions_generated: number }>({ suggestions_generated: 0 });
 
   useEffect(() => {
     if (!user) {
@@ -70,6 +73,7 @@ const TeamDetail = () => {
     fetchTeamData();
     fetchSuggestions();
     fetchRules();
+    fetchEventStats();
   }, [user, slug, navigate]);
 
   const fetchTeamData = async () => {
@@ -143,6 +147,17 @@ const TeamDetail = () => {
     }
   };
 
+  const fetchEventStats = async () => {
+    if (!team) return;
+    
+    try {
+      const stats = await getEventStats(team.id);
+      setEventStats(stats);
+    } catch (error: any) {
+      console.error('Error fetching event stats:', error);
+    }
+  };
+
   const fetchSuggestions = async () => {
     if (!team) return;
     
@@ -171,18 +186,31 @@ const TeamDetail = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "추천 생성 완료",
-        description: `${data.suggestions}개의 회의 시간이 추천되었습니다.`,
+      // Log event
+      await logEvent({
+        eventType: 'suggestions_generated',
+        teamId: team.id,
+        metadata: { count: data.suggestions || 0 }
       });
 
-      // Refresh suggestions
+      const message = data.suggestions > 0 
+        ? getToastMessage('suggestions_generated_success', team.locale)
+        : getToastMessage('suggestions_no_results', team.locale);
+
+      toast({
+        title: data.suggestions > 0 ? "추천 생성 완료" : "추천 결과 없음",
+        description: `${data.suggestions}개의 회의 시간이 추천되었습니다.` || message,
+      });
+
+      // Refresh suggestions and stats
       fetchSuggestions();
+      fetchEventStats();
     } catch (error: any) {
       console.error('Error generating suggestions:', error);
+      
       toast({
         title: "추천 생성 실패",
-        description: error.message,
+        description: getToastMessage('suggestions_generated_error', team.locale || 'ko'),
         variant: "destructive",
       });
     } finally {
@@ -201,10 +229,17 @@ const TeamDetail = () => {
 
       if (error) throw error;
 
+      // Log event
+      await logEvent({
+        eventType: 'share_link_created',
+        teamId: team.id,
+        metadata: { shareLink: data.shareLink }
+      });
+
       setShareLink(data.shareLink);
       toast({
         title: "공유 링크 생성됨",
-        description: "링크가 클립보드에 복사되었습니다.",
+        description: getToastMessage('share_link_created_success', team.locale || 'ko'),
       });
 
       // Copy to clipboard
@@ -213,7 +248,7 @@ const TeamDetail = () => {
       console.error('Error creating share link:', error);
       toast({
         title: "공유 링크 생성 실패",
-        description: error.message,
+        description: getToastMessage('share_link_created_error', team.locale || 'ko'),
         variant: "destructive",
       });
     } finally {
@@ -263,7 +298,7 @@ const TeamDetail = () => {
     });
   };
 
-  const handleExportICS = (suggestion: Suggestion) => {
+  const handleExportICS = async (suggestion: Suggestion) => {
     const startDate = new Date(suggestion.starts_at_utc);
     const endDate = new Date(suggestion.ends_at_utc);
     const attendingMembers = getMembersByIds(suggestion.attending_member_ids);
@@ -329,13 +364,24 @@ const TeamDetail = () => {
     link.download = `fairmeet-${formatDateUTC(startDate)}.ics`;
     link.click();
 
+    // Log event
+    await logEvent({
+      eventType: 'slot_exported',
+      teamId: team?.id,
+      metadata: { 
+        format: 'ics',
+        suggestion_id: suggestion.id,
+        start_time: suggestion.starts_at_utc 
+      }
+    });
+
     toast({
       title: "ICS 파일 다운로드",
-      description: "캘린더 파일이 다운로드되었습니다.",
+      description: getToastMessage('slot_exported_success', team?.locale || 'ko'),
     });
   };
 
-  const handleGoogleCalendar = (suggestion: Suggestion) => {
+  const handleGoogleCalendar = async (suggestion: Suggestion) => {
     const startDate = new Date(suggestion.starts_at_utc);
     const endDate = new Date(suggestion.ends_at_utc);
     const attendingMembers = getMembersByIds(suggestion.attending_member_ids);
@@ -358,6 +404,17 @@ const TeamDetail = () => {
 
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}`;
     
+    // Log event
+    await logEvent({
+      eventType: 'slot_exported',
+      teamId: team?.id,
+      metadata: { 
+        format: 'google_calendar',
+        suggestion_id: suggestion.id,
+        start_time: suggestion.starts_at_utc 
+      }
+    });
+
     window.open(googleUrl, '_blank');
   };
 
@@ -378,10 +435,15 @@ Generated by FairMeet`;
       await navigator.clipboard.writeText(inviteText);
       toast({
         title: "초대 텍스트 복사됨",
-        description: "클립보드에 복사되었습니다.",
+        description: getToastMessage('invite_copied_success', team?.locale || 'ko'),
       });
     } catch (error) {
       console.error('Failed to copy:', error);
+      toast({
+        title: "복사 실패",
+        description: getToastMessage('invite_copied_error', team?.locale || 'ko'),
+        variant: "destructive",
+      });
     }
   };
 
@@ -471,12 +533,13 @@ Generated by FairMeet`;
 
     toast({
       title: "QA 테스트 파일 생성",
-      description: "PST, UTC, KST 테스트 ICS 파일 3개가 다운로드되었습니다.",
+      description: getToastMessage('qa_test_success', team?.locale || 'ko'),
     });
   };
 
   const handleMemberFormSuccess = () => {
     fetchTeamData();
+    fetchEventStats();
     setMemberFormOpen(false);
     setEditingMember(null);
   };
@@ -539,14 +602,15 @@ Generated by FairMeet`;
 
       toast({
         title: "멤버 삭제 완료",
-        description: "멤버가 성공적으로 삭제되었습니다.",
+        description: getToastMessage('member_deleted_success', team?.locale || 'ko'),
       });
 
       fetchTeamData();
+      fetchEventStats();
     } catch (error: any) {
       toast({
         title: "멤버 삭제 실패",
-        description: error.message,
+        description: getToastMessage('member_deleted_error', team?.locale || 'ko'),
         variant: "destructive",
       });
     }
@@ -675,6 +739,11 @@ Generated by FairMeet`;
                   <CardTitle className="flex items-center space-x-2">
                     <Users className="h-5 w-5" />
                     <span>팀 멤버 ({members.length}명)</span>
+                    {eventStats.suggestions_generated > 0 && (
+                      <Badge variant="outline" className="ml-2">
+                        추천 생성 {eventStats.suggestions_generated}회
+                      </Badge>
+                    )}
                   </CardTitle>
                   {canManage && (
                     <div className="flex space-x-2">
