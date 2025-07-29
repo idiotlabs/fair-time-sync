@@ -422,7 +422,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_can_manage_team: {
+        Args: { _user_id: string; _team_id: string }
+        Returns: boolean
+      }
+      user_has_team_access: {
+        Args: { _user_id: string; _team_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "owner" | "admin" | "member"
