@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Users, Settings, Share, Calendar, Plus, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users, Settings, Share, Calendar, Plus, Edit, Trash2, Download, Copy, ExternalLink, Filter } from 'lucide-react';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import MemberForm from '@/components/MemberForm';
 import RulesForm from '@/components/RulesForm';
 
@@ -52,6 +56,9 @@ const TeamDetail = () => {
   const [editingMember, setEditingMember] = useState<any>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [generatingsuggestions, setGeneratingSuggestions] = useState(false);
+  const [sortBy, setSortBy] = useState<'score' | 'time' | 'fairness'>('score');
+  const [showRequiredOnly, setShowRequiredOnly] = useState(false);
+  const [rules, setRules] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +67,7 @@ const TeamDetail = () => {
     }
     fetchTeamData();
     fetchSuggestions();
+    fetchRules();
   }, [user, slug, navigate]);
 
   const fetchTeamData = async () => {
@@ -116,6 +124,23 @@ const TeamDetail = () => {
     }
   };
 
+  const fetchRules = async () => {
+    if (!team) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('rules')
+        .select('*')
+        .eq('team_id', team?.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setRules(data);
+    } catch (error: any) {
+      console.error('Error fetching rules:', error);
+    }
+  };
+
   const fetchSuggestions = async () => {
     if (!team) return;
     
@@ -160,6 +185,101 @@ const TeamDetail = () => {
       });
     } finally {
       setGeneratingSuggestions(false);
+    }
+  };
+
+  const formatTimeForTeam = (utcTime: string, timezone: string) => {
+    try {
+      return formatInTimeZone(new Date(utcTime), timezone, 'MMM d, HH:mm');
+    } catch (error) {
+      return new Date(utcTime).toLocaleString();
+    }
+  };
+
+  const getMembersByIds = (memberIds: string[]) => {
+    return members.filter(member => memberIds.includes(member.id));
+  };
+
+  const calculateScore = (suggestion: Suggestion) => {
+    const penalties = suggestion.penalties_json;
+    return suggestion.overlap_ratio - (penalties.night_penalties + penalties.burden_penalties + penalties.adjacency_penalties);
+  };
+
+  const getSortedAndFilteredSuggestions = () => {
+    let filtered = suggestions;
+
+    if (showRequiredOnly && rules?.required_member_ids?.length > 0) {
+      filtered = suggestions.filter(suggestion => 
+        rules.required_member_ids.every((reqId: string) => 
+          suggestion.attending_member_ids.includes(reqId)
+        )
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'score':
+          return calculateScore(b) - calculateScore(a);
+        case 'time':
+          return new Date(a.starts_at_utc).getTime() - new Date(b.starts_at_utc).getTime();
+        case 'fairness':
+          return b.fairness_score - a.fairness_score;
+        default:
+          return 0;
+      }
+    });
+  };
+
+  const handleExportICS = (suggestion: Suggestion) => {
+    const startDate = new Date(suggestion.starts_at_utc);
+    const endDate = new Date(suggestion.ends_at_utc);
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//FairMeet//Meeting Suggestion//EN',
+      'BEGIN:VEVENT',
+      `UID:${suggestion.id}@fairmeet.com`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:Team Meeting - ${team?.name}`,
+      `DESCRIPTION:Fair meeting suggestion with ${suggestion.attending_member_ids.length} attendees`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `meeting-${formatDate(startDate)}.ics`;
+    link.click();
+  };
+
+  const handleCopyInvite = async (suggestion: Suggestion) => {
+    const attendingMembers = getMembersByIds(suggestion.attending_member_ids);
+    const startTime = formatTimeForTeam(suggestion.starts_at_utc, team?.default_timezone || 'UTC');
+    
+    const inviteText = `🗓️ Team Meeting Invitation
+
+📅 Time: ${startTime}
+👥 Attendees: ${attendingMembers.map(m => m.display_name).join(', ')}
+📊 Overlap: ${Math.round(suggestion.overlap_ratio * 100)}%
+⚖️ Fairness: ${Math.round(suggestion.fairness_score * 100)}%
+
+Generated by FairMeet`;
+
+    try {
+      await navigator.clipboard.writeText(inviteText);
+      toast({
+        title: "초대 텍스트 복사됨",
+        description: "클립보드에 복사되었습니다.",
+      });
+    } catch (error) {
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -487,31 +607,155 @@ const TeamDetail = () => {
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">추천 시간이 없습니다</h3>
                     <p className="text-muted-foreground mb-4">
-                      팀원과 규칙을 설정한 후 회의 시간을 추천받으세요.
+                      {members.length < 2 
+                        ? "팀원을 추가하고 규칙을 설정한 후 회의 시간을 추천받으세요."
+                        : rules?.min_attendance_ratio > 0.8
+                        ? "겹치는 시간이 기준에 못 미칩니다. 최소 참석 비율을 낮춰보세요."
+                        : "팀원과 규칙을 설정한 후 회의 시간을 추천받으세요."
+                      }
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {suggestions.map((suggestion, index) => (
-                      <div key={suggestion.id} className="p-4 bg-secondary/50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">추천 #{index + 1}</h4>
-                          <div className="flex space-x-2">
-                            <Badge variant="secondary">
-                              겹침률: {Math.round(suggestion.overlap_ratio * 100)}%
-                            </Badge>
-                            <Badge variant="outline">
-                              공정성: {Math.round(suggestion.fairness_score * 100)}%
-                            </Badge>
+                    {/* Filters and Sort */}
+                    <div className="flex items-center justify-between gap-4 p-4 bg-secondary/30 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Filter className="h-4 w-4" />
+                          <span className="text-sm font-medium">정렬:</span>
+                          <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="score">점수순</SelectItem>
+                              <SelectItem value="time">시간순</SelectItem>
+                              <SelectItem value="fairness">공정성순</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {rules?.required_member_ids?.length > 0 && (
+                          <div className="flex items-center space-x-2">
+                            <Switch 
+                              id="required-only" 
+                              checked={showRequiredOnly}
+                              onCheckedChange={setShowRequiredOnly}
+                            />
+                            <Label htmlFor="required-only" className="text-sm">
+                              필수 참석자만
+                            </Label>
                           </div>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          <p>시작: {new Date(suggestion.starts_at_utc).toLocaleString('ko-KR')}</p>
-                          <p>종료: {new Date(suggestion.ends_at_utc).toLocaleString('ko-KR')}</p>
-                          <p>참석자: {suggestion.attending_member_ids.length}명</p>
-                        </div>
+                        )}
                       </div>
-                    ))}
+                      
+                      <div className="text-sm text-muted-foreground">
+                        {getSortedAndFilteredSuggestions().length}개 추천
+                      </div>
+                    </div>
+
+                    {/* Suggestions */}
+                    {getSortedAndFilteredSuggestions().map((suggestion, index) => {
+                      const attendingMembers = getMembersByIds(suggestion.attending_member_ids);
+                      const score = calculateScore(suggestion);
+                      const hasRequiredMembers = rules?.required_member_ids?.length > 0 && 
+                        rules.required_member_ids.every((reqId: string) => 
+                          suggestion.attending_member_ids.includes(reqId)
+                        );
+
+                      return (
+                        <Card key={suggestion.id} className="card-elegant">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg mb-2">
+                                  추천 #{index + 1}
+                                  {hasRequiredMembers && (
+                                    <Badge className="ml-2 bg-green-100 text-green-800">
+                                      Required
+                                    </Badge>
+                                  )}
+                                </CardTitle>
+                                <div className="text-sm text-muted-foreground">
+                                  <p className="font-medium">
+                                    📅 {formatTimeForTeam(suggestion.starts_at_utc, team?.default_timezone || 'UTC')}
+                                  </p>
+                                  <p>
+                                    ⏱️ {Math.round((new Date(suggestion.ends_at_utc).getTime() - new Date(suggestion.starts_at_utc).getTime()) / (1000 * 60))}분
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col items-end space-y-2">
+                                <div className="flex space-x-2">
+                                  <Badge variant="secondary">
+                                    겹침 {Math.round(suggestion.overlap_ratio * 100)}%
+                                  </Badge>
+                                  <Badge variant="outline">
+                                    공정성 {Math.round(suggestion.fairness_score * 100)}%
+                                  </Badge>
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  점수: {score.toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          
+                          <CardContent>
+                            <div className="space-y-4">
+                              {/* Attendees */}
+                              <div>
+                                <h4 className="text-sm font-medium mb-2">👥 참석자 ({attendingMembers.length}명)</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {attendingMembers.slice(0, 3).map(member => (
+                                    <Badge key={member.id} variant="outline" className="text-xs">
+                                      {member.display_name}
+                                      <span className="ml-1 text-muted-foreground">
+                                        ({formatTimeForTeam(suggestion.starts_at_utc, member.timezone)})
+                                      </span>
+                                    </Badge>
+                                  ))}
+                                  {attendingMembers.length > 3 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{attendingMembers.length - 3}명
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex space-x-2 pt-2 border-t">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleExportICS(suggestion)}
+                                >
+                                  <Download className="h-4 w-4 mr-1" />
+                                  Export
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => console.log('Share:', suggestion.id)}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  Share
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleCopyInvite(suggestion)}
+                                >
+                                  <Copy className="h-4 w-4 mr-1" />
+                                  Copy invite
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
