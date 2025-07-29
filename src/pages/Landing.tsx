@@ -166,12 +166,12 @@ const Landing = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm">
-                <li>• {t('pricing.free.features.0')}</li>
-                <li>• {t('pricing.free.features.1')}</li>
-                <li>• {t('pricing.free.features.2')}</li>
-                <li>• {t('pricing.free.features.3')}</li>
+                <li>• 팀 1개</li>
+                <li>• 팀원 최대 5명</li>
+                <li>• 주 2회 추천 생성</li>
+                <li>• 기본 공유 기능</li>
               </ul>
-              <Button className="w-full mt-6" variant="outline">{t('pricing.free.cta')}</Button>
+              <Button className="w-full mt-6" variant="outline">시작하기</Button>
             </CardContent>
           </Card>
 
@@ -187,13 +187,13 @@ const Landing = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm">
-                <li>• {t('pricing.pro.features.0')}</li>
-                <li>• {t('pricing.pro.features.1')}</li>
-                <li>• {t('pricing.pro.features.2')}</li>
-                <li>• {t('pricing.pro.features.3')}</li>
-                <li>• {t('pricing.pro.features.4')}</li>
+                <li>• 무제한 팀</li>
+                <li>• 팀당 최대 20명</li>
+                <li>• 무제한 추천 생성</li>
+                <li>• 커스텀 브랜딩</li>
+                <li>• 고급 분석</li>
               </ul>
-              <Button className="w-full mt-6 btn-gradient">{t('pricing.pro.cta')}</Button>
+              <Button className="w-full mt-6 btn-gradient">시작하기</Button>
             </CardContent>
           </Card>
 
@@ -208,13 +208,13 @@ const Landing = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm">
-                <li>• {t('pricing.team.features.0')}</li>
-                <li>• {t('pricing.team.features.1')}</li>
-                <li>• {t('pricing.team.features.2')}</li>
-                <li>• {t('pricing.team.features.3')}</li>
-                <li>• {t('pricing.team.features.4')}</li>
+                <li>• 무제한 팀</li>
+                <li>• 팀당 최대 50명</li>
+                <li>• Slack 연동</li>
+                <li>• 감사 로그</li>
+                <li>• 전담 지원</li>
               </ul>
-              <Button className="w-full mt-6" variant="outline">{t('pricing.team.cta')}</Button>
+              <Button className="w-full mt-6" variant="outline">문의하기</Button>
             </CardContent>
           </Card>
         </div>
