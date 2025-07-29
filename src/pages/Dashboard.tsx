@@ -97,6 +97,22 @@ const Dashboard = () => {
     }
 
     try {
+      // Check if slug already exists
+      const { data: existingTeam, error: checkError } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('slug', teamSlug)
+        .single();
+
+      if (existingTeam) {
+        toast({
+          title: "중복된 팀 URL",
+          description: "이미 사용 중인 팀 URL입니다. 다른 이름을 사용해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Create team
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
@@ -144,6 +160,7 @@ const Dashboard = () => {
       setTeamSlug('');
       fetchTeams();
     } catch (error: any) {
+      console.error('Team creation error:', error);
       toast({
         title: "팀 생성 실패",
         description: error.message,
