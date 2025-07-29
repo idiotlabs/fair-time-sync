@@ -7,7 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Users, Settings, Share, Calendar, Plus } from 'lucide-react';
+import { ArrowLeft, Users, Settings, Share, Calendar, Plus, Edit, Trash2 } from 'lucide-react';
+import MemberForm from '@/components/MemberForm';
+import RulesForm from '@/components/RulesForm';
 
 interface Team {
   id: string;
@@ -36,6 +38,8 @@ const TeamDetail = () => {
   const [userRole, setUserRole] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('members');
+  const [memberFormOpen, setMemberFormOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
@@ -96,6 +100,83 @@ const TeamDetail = () => {
       navigate('/app');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMemberFormSuccess = () => {
+    fetchTeamData();
+    setMemberFormOpen(false);
+    setEditingMember(null);
+  };
+
+  const handleEditMember = async (memberId: string) => {
+    try {
+      // Fetch member details with working blocks and no meeting blocks
+      const { data: memberData, error: memberError } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('id', memberId)
+        .single();
+
+      if (memberError) throw memberError;
+
+      const { data: workingBlocks, error: workingError } = await supabase
+        .from('working_blocks')
+        .select('*')
+        .eq('member_id', memberId);
+
+      if (workingError) throw workingError;
+
+      const { data: noMeetingBlocks, error: noMeetingError } = await supabase
+        .from('no_meeting_blocks')
+        .select('*')
+        .eq('member_id', memberId);
+
+      if (noMeetingError) throw noMeetingError;
+
+      setEditingMember({
+        ...memberData,
+        working_blocks: workingBlocks,
+        no_meeting_blocks: noMeetingBlocks
+      });
+      setMemberFormOpen(true);
+    } catch (error: any) {
+      toast({
+        title: "멤버 정보 로드 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string) => {
+    if (!confirm('정말로 이 멤버를 삭제하시겠습니까?')) return;
+
+    try {
+      // Delete related blocks first
+      await supabase.from('working_blocks').delete().eq('member_id', memberId);
+      await supabase.from('no_meeting_blocks').delete().eq('member_id', memberId);
+      
+      // Delete member
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      toast({
+        title: "멤버 삭제 완료",
+        description: "멤버가 성공적으로 삭제되었습니다.",
+      });
+
+      fetchTeamData();
+    } catch (error: any) {
+      toast({
+        title: "멤버 삭제 실패",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -229,7 +310,7 @@ const TeamDetail = () => {
                         <Plus className="h-4 w-4 mr-2" />
                         샘플 팀 생성
                       </Button>
-                      <Button size="sm" className="btn-gradient">
+                      <Button size="sm" className="btn-gradient" onClick={() => setMemberFormOpen(true)}>
                         <Plus className="h-4 w-4 mr-2" />
                         멤버 추가
                       </Button>
@@ -265,6 +346,25 @@ const TeamDetail = () => {
                             {member.role === 'owner' ? '소유자' : 
                              member.role === 'admin' ? '관리자' : '멤버'}
                           </Badge>
+                          {canManage && (
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEditMember(member.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteMember(member.id)}
+                                disabled={member.role === 'owner'}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -275,28 +375,31 @@ const TeamDetail = () => {
           </TabsContent>
 
           <TabsContent value="rules" className="space-y-6">
-            <Card className="card-elegant">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5" />
-                  <span>회의 규칙</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">규칙 설정</h3>
-                  <p className="text-muted-foreground mb-4">
-                    회의 시간 추천을 위한 규칙을 설정하세요.
-                  </p>
-                  {canManage && (
-                    <Button className="btn-gradient">
-                      규칙 설정하기
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {canManage ? (
+              <RulesForm 
+                teamId={team.id} 
+                members={members}
+                onSuccess={fetchTeamData}
+              />
+            ) : (
+              <Card className="card-elegant">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Settings className="h-5 w-5" />
+                    <span>회의 규칙</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">규칙 보기</h3>
+                    <p className="text-muted-foreground mb-4">
+                      팀 관리자만 규칙을 수정할 수 있습니다.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="suggestions" className="space-y-6">
@@ -352,6 +455,15 @@ const TeamDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Member Form Modal */}
+      <MemberForm
+        open={memberFormOpen}
+        onOpenChange={setMemberFormOpen}
+        teamId={team.id}
+        member={editingMember}
+        onSuccess={handleMemberFormSuccess}
+      />
     </div>
   );
 };
