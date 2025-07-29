@@ -27,6 +27,16 @@ interface TeamMember {
   timezone: string;
 }
 
+interface Suggestion {
+  id: string;
+  starts_at_utc: string;
+  ends_at_utc: string;
+  attending_member_ids: string[];
+  overlap_ratio: number;
+  fairness_score: number;
+  penalties_json: any;
+}
+
 const TeamDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -40,6 +50,8 @@ const TeamDetail = () => {
   const [activeTab, setActiveTab] = useState('members');
   const [memberFormOpen, setMemberFormOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<any>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [generatingsuggestions, setGeneratingSuggestions] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -47,6 +59,7 @@ const TeamDetail = () => {
       return;
     }
     fetchTeamData();
+    fetchSuggestions();
   }, [user, slug, navigate]);
 
   const fetchTeamData = async () => {
@@ -100,6 +113,53 @@ const TeamDetail = () => {
       navigate('/app');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    if (!team) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('suggestions')
+        .select('*')
+        .eq('team_id', team?.id)
+        .order('fairness_score', { ascending: false });
+
+      if (error) throw error;
+      setSuggestions(data || []);
+    } catch (error: any) {
+      console.error('Error fetching suggestions:', error);
+    }
+  };
+
+  const generateSuggestions = async () => {
+    if (!team) return;
+    
+    try {
+      setGeneratingSuggestions(true);
+      const { data, error } = await supabase.functions.invoke('generate-suggestions', {
+        body: { teamId: team.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "추천 생성 완료",
+        description: `${data.suggestions}개의 회의 시간이 추천되었습니다.`,
+      });
+
+      // Refresh suggestions
+      fetchSuggestions();
+    } catch (error: any) {
+      console.error('Error generating suggestions:', error);
+      toast({
+        title: "추천 생성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingSuggestions(false);
     }
   };
 
@@ -411,20 +471,49 @@ const TeamDetail = () => {
                     <span>회의 시간 추천</span>
                   </CardTitle>
                   {canManage && (
-                    <Button className="btn-gradient">
-                      추천 만들기
+                    <Button 
+                      className="btn-gradient" 
+                      onClick={generateSuggestions}
+                      disabled={generatingsuggestions}
+                    >
+                      {generatingsuggestions ? "생성 중..." : "추천 만들기"}
                     </Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">추천 시간이 없습니다</h3>
-                  <p className="text-muted-foreground mb-4">
-                    팀원과 규칙을 설정한 후 회의 시간을 추천받으세요.
-                  </p>
-                </div>
+                {suggestions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">추천 시간이 없습니다</h3>
+                    <p className="text-muted-foreground mb-4">
+                      팀원과 규칙을 설정한 후 회의 시간을 추천받으세요.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {suggestions.map((suggestion, index) => (
+                      <div key={suggestion.id} className="p-4 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold">추천 #{index + 1}</h4>
+                          <div className="flex space-x-2">
+                            <Badge variant="secondary">
+                              겹침률: {Math.round(suggestion.overlap_ratio * 100)}%
+                            </Badge>
+                            <Badge variant="outline">
+                              공정성: {Math.round(suggestion.fairness_score * 100)}%
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          <p>시작: {new Date(suggestion.starts_at_utc).toLocaleString('ko-KR')}</p>
+                          <p>종료: {new Date(suggestion.ends_at_utc).toLocaleString('ko-KR')}</p>
+                          <p>참석자: {suggestion.attending_member_ids.length}명</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
